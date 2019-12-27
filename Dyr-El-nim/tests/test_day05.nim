@@ -1,9 +1,15 @@
 import day05
 import unittest
+import strutils
+
+proc lastLine(s: string): string =
+    for line in s.splitLines():
+        if line.len > 0:
+            result = line
 
 const
-    sol1 = "0\n0\n0\n0\n0\n0\n0\n0\n0\n12440243\n"
-    sol2 = "15486302\n"
+    sol1 = "12440243"
+    sol2 = "15486302"
 
 suite "day05, problem 1":
     test "example 1":
@@ -39,7 +45,11 @@ suite "day05, problem 1":
             memory = loadMemory(input)
         let
             output = run(memory, false, userInput)
-        check(output == sol1)
+        var lastLine = ""
+        for line in output.splitlines():
+            if line.len > 0:
+                lastLine = line
+        check(lastLine == sol1)
         echo("Solution 1: ", sol1)
 
 suite "day05, problem 2":
@@ -65,5 +75,7 @@ suite "day05, problem 2":
             userInput = """5"""
         var
             memory = loadMemory(input)
-        check(sol2 == run(memory, false, userInput))
+        let
+            solution = run(memory, false, userInput)
+        check(sol2 == solution.lastLine())
         echo("Solution 2: ", sol2)        
