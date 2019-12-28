@@ -16,10 +16,9 @@ suite "day01, problem 1":
         check(fuelForMass(100756) == 33583)
     test "solution":
         let
-            inFile = open("inputs/day01.txt")
-        check(solution1(inFile) == sol1)
+            input = open("inputs/day01.txt").readAll()
+        check(solution1(input) == sol1)
         echo("Solution 1: ", sol1)
-        inFile.close()
 
 suite "day01, problem 2":
     test "example 1":
@@ -32,7 +31,6 @@ suite "day01, problem 2":
         check(fuelForAllMass(100756) == 50346)
     test "solution":
         let
-            inFile = open("inputs/day01.txt")
-        check(solution2(inFile) == sol2)
+            input = open("inputs/day01.txt").readAll
+        check(solution2(input) == sol2)
         echo("Solution 2: ", sol2)
-        inFile.close()
