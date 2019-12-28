@@ -1,5 +1,6 @@
-import tables
+import strscans
 import strutils
+import tables
 
 type
     OrbitMap = Table[string, string]
@@ -9,12 +10,11 @@ type
 
 proc parseOrbits(desc: string): OrbitMap =
     for s in desc.splitLines:
-        let
-            token = s.strip
-            pos = token.find(")")
-            baseObj = token.substr(0, pos-1)
-            orbObj = token.substr(pos+1, len(token))
-        result[orbObj] = baseObj
+        var 
+            baseObj: string
+            orbObj: string
+        if (s & "(").scanf("$s$*)$*(", baseObj, orbObj):
+            result[orbObj] = baseObj
 
 proc calcOrbit(orbMap: OrbitMap, orbits: var Orbits, obj: string) =
     if orbits.hasKey(obj):
