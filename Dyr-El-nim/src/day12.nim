@@ -1,15 +1,20 @@
 import strscans
 import strutils
 import strformat
+import math
+import sequtils
+
+const
+    MoonDimensions = 3
 
 type
-    MoonPosition = tuple[x, y, z: int]
-    MoonVelocity = tuple[dx, dy, dz: int]
+    MoonPosition = array[1 .. MoonDimensions, int]
+    MoonVelocity = array[1 .. MoonDimensions, int]
     Moon = tuple[p: MoonPosition, v: MoonVelocity]
     Moons = seq[Moon]
 
 proc `$`(m: Moon): string =
-    fmt"pos=<x={m.p.x}, y={m.p.y}, z={m.p.z}>, vel=<x={m.v.dx}, y={m.v.dy}, z={m.v.dz}>"
+    fmt"pos=<x={m.p[1]}, y={m.p[2]}, z={m.p[3]}>, vel=<x={m.v[1]}, y={m.v[2]}, z={m.v[3]}>"
 
 proc `$`*(ms: Moons): string =
     for m in ms:
@@ -20,28 +25,23 @@ proc `$`*(ms: Moons): string =
 proc updateVelocities(moons: var Moons) =
     for i in moons.low..moons.high:
         for j in moons.low..moons.high:
-            if moons[i].p.x < moons[j].p.x:
-                moons[i].v.dx.inc
-                moons[j].v.dx.dec
-            if moons[i].p.y < moons[j].p.y:
-                moons[i].v.dy.inc
-                moons[j].v.dy.dec
-            if moons[i].p.z < moons[j].p.z:
-                moons[i].v.dz.inc
-                moons[j].v.dz.dec
+            for dim in 1..MoonDimensions:
+                if moons[i].p[dim] < moons[j].p[dim]:
+                    moons[i].v[dim].inc
+                    moons[j].v[dim].dec
 
 proc updatePositions(moons: var Moons) =
     for i in moons.low..moons.high:
-        moons[i].p.x.inc(moons[i].v.dx)
-        moons[i].p.y.inc(moons[i].v.dy)
-        moons[i].p.z.inc(moons[i].v.dz)
+        moons[i].p[1].inc(moons[i].v[1])
+        moons[i].p[2].inc(moons[i].v[2])
+        moons[i].p[3].inc(moons[i].v[3])
 
 proc step*(moons: var Moons) =
     moons.updateVelocities()
     moons.updatePositions()
 
 proc parseMoon(s: string, m: var Moon): bool =
-    result = s.scanf("<x=$i, y=$i, z=$i>", m.p.x, m.p.y, m.p.z)
+    result = s.scanf("<x=$i, y=$i, z=$i>", m.p[1], m.p[2], m.p[3])
 
 proc parseInput*(s: string): Moons =
     var
@@ -51,10 +51,10 @@ proc parseInput*(s: string): Moons =
             result.add(m)
 
 proc calculateKineticEnergy(moon: Moon): int =
-    result = abs(moon.v.dx) + abs(moon.v.dy) + abs(moon.v.dz)
+    result = sum(map(moon.v, proc (x:int): int = abs(x)))
 
 proc calculatePotentialEnergy(moon: Moon): int =
-    result = abs(moon.p.x) + abs(moon.p.y) + abs(moon.p.z)
+    result = sum(map(moon.p, proc (x:int): int = abs(x)))
 
 proc calculateEnergy(moons: Moons): int =
     for moon in moons:
@@ -67,22 +67,10 @@ proc totalEnergyAfter*(inp: string, steps: int): int =
         moons.step()
     moons.calculateEnergy()
 
-proc isRepeatX(m1, m2: Moons): bool =
+proc isRepeat1D(m1, m2: Moons, d: int): bool =
     result = true
     for i in m1.low..m1.high:
-        if m1[i].p.x != m2[i].p.x or m1[i].v.dx != m2[i].v.dx:
-            return false
-
-proc isRepeatY(m1, m2: Moons): bool =
-    result = true
-    for i in m1.low..m1.high:
-        if m1[i].p.y != m2[i].p.y or m1[i].v.dy != m2[i].v.dy:
-            return false
-
-proc isRepeatZ(m1, m2: Moons): bool =
-    result = true
-    for i in m1.low..m1.high:
-        if m1[i].p.z != m2[i].p.z or m1[i].v.dz != m2[i].v.dz:
+        if m1[i].p[d] != m2[i].p[d] or m1[i].v[d] != m2[i].v[d]:
             return false
 
 proc sgd(a, b : int64) : int64 =
@@ -102,17 +90,15 @@ proc firstRepeatAfter*(input: string): int64 =
         initialMoons = parseInput(input)
     var
         moons = parseInput(input)
-        cycleX = -1
-        cycleY = -1
-        cycleZ = -1
+        cycles: array[1..MoonDimensions, int]
         steps = 0
-    while cycleX < 0 or cycleY < 0 or cycleZ < 0:
+    result = 1
+    for d in 1..MoonDimensions:
+        cycles[d] = -1
+    while any(cycles, proc (x:int):bool = x < 0):
         moons.step()
         steps.inc
-        if cycleX < 0 and isRepeatX(initialMoons, moons):
-            cycleX = steps
-        if cycleY < 0 and isRepeatY(initialMoons, moons):
-            cycleY = steps
-        if cycleZ < 0 and isRepeatZ(initialMoons, moons):
-            cycleZ = steps
-    result = mgn(mgn(cycleX, cycleY), cycleZ)
+        for d in 1..MoonDimensions:
+            if cycles[d] < 0 and isRepeat1D(initialMoons, moons, d):
+                cycles[d] = steps
+                result = mgn(result, steps)

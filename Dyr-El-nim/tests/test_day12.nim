@@ -55,4 +55,4 @@ suite "day12, problem 2":
         let
             input = open("inputs/day12.txt").readAll()
         check(firstRepeatAfter(input) == sol2)
-        echo("Solution 2: \n", sol2)
+        echo("Solution 2: ", sol2)
