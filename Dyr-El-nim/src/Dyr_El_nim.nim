@@ -1,26 +1,45 @@
-# This is just an example to get you started. A typical binary package
-# uses this file as the main entry point of the application.
+import std.monotimes
+import times
 
-import nigui
+import day01 as d01
+import day02 as d02
 
 when isMainModule:
-  echo("AoC Day 7 graphical representation")
-  
-  app.init()
+  echo("Advent of Code 2019: Solutions")
+  var
+    startTime = getMonoTime()
+    stopTime = getMonoTime()
+    totalTime = initDuration(0)
 
-  var win = newWindow()
-  var mainContainer = newLayoutContainer(Layout_Horizontal)
-  win.add(mainContainer)
-  var controlContainer = newLayoutContainer(Layout_Vertical)
-  mainContainer.add(controlContainer)
-  var stepButton = newButton("Step")
-  controlContainer.add(stepButton)
-  var runButton = newButton("Run")
-  controlContainer.add(runButton)
-  var stopButton = newButton("Stop")
-  controlContainer.add(stopButton)
-  var quitButton = newButton("Quit")
-  controlContainer.add(quitButton)
-  win.show()
-  app.run()
+  echo("Day 01:")
+  block day01:
+    startTime = getMonoTime()
+    block part01_1:
+      let
+        inFile = open("inputs/day01.txt")
+      echo("  Solution 01.1: ", d01.solution1(inFile))
+      inFile.close()
+    block part01_2:
+      let
+        inFile = open("inputs/day01.txt")
+      echo("  Solution 01.2: ", d01.solution2(inFile))
+      inFile.close()
+    stopTime = getMonoTime()
+  echo(" Time: ",$(float64((stopTime - startTime).inNanoseconds)*0.000001))
+  totalTime = totalTime + (stopTime - startTime)
 
+  echo("Day 02:")
+  block day02:
+    startTime = getMonoTime()
+    block part02_1:
+      let
+        input = open("inputs/day02.txt").readAll()
+      echo("  Solution 02.1: ", d02.run(input, 0, 0))
+    block part02_2:
+      let
+        input = open("inputs/day02.txt").readAll()
+      echo("  Solution 02.2: ", d02.run(input, 12, 2))
+    stopTime = getMonoTime()
+  echo(" Time: ",$(float64((stopTime - startTime).inNanoseconds)*0.000001))
+  totalTime = totalTime + (stopTime - startTime)
+  echo("Total time: ", $(float(totalTime.inNanoseconds)*0.000001))
